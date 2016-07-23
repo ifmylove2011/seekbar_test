@@ -1,0 +1,25 @@
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context="${relativePackage}.${activityClass}" >
+
+    <com.xter.seekbartest.view.VerticalSeekBar
+        android:id="@+id/vs_test_1"
+        style="@style/VerticalVolumeBar"
+        android:layout_width="wrap_content"
+        android:layout_height="300dp"
+        android:layout_centerVertical="true"
+        android:layout_marginLeft="100dp"
+        android:layout_marginStart="100dp" />
+
+    <com.xter.seekbartest.view.VerticalSeekBar2
+        android:id="@+id/vs_test_2"
+        style="@style/VerticalVolumeBar"
+        android:layout_width="wrap_content"
+        android:layout_height="300dp"
+        android:layout_centerVertical="true"
+        android:layout_marginLeft="200dp"
+        android:layout_marginStart="200dp" />
+
+</RelativeLayout>
