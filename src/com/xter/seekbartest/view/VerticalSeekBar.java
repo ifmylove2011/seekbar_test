@@ -56,6 +56,7 @@ public class VerticalSeekBar extends SeekBar {
 		super.onDraw(c);
 	}
 
+
 	@Override
 	public boolean onTouchEvent(MotionEvent event) {
 		if (!isEnabled()) {

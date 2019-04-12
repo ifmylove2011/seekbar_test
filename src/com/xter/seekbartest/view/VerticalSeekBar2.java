@@ -5,6 +5,7 @@ import android.graphics.Canvas;
 import android.graphics.Rect;
 import android.graphics.drawable.Drawable;
 import android.util.AttributeSet;
+import android.util.Log;
 import android.view.MotionEvent;
 import android.widget.SeekBar;
 
@@ -35,9 +36,15 @@ public class VerticalSeekBar2 extends SeekBar {
 	@Override
 	protected synchronized void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
 		super.onMeasure(heightMeasureSpec, widthMeasureSpec);
+		//倒置宽与高
 		setMeasuredDimension(getMeasuredHeight(), getMeasuredWidth());
 	}
 
+	/**
+	 * 逆时针转90度，并向下移整个控件的高度
+	 *
+	 * @param c
+	 */
 	protected void onDraw(Canvas c) {
 		c.rotate(-90);
 		c.translate(-getHeight(), 0);
@@ -45,10 +52,18 @@ public class VerticalSeekBar2 extends SeekBar {
 		super.onDraw(c);
 	}
 
-	void onProgressRefresh(float scale, boolean fromUser) {
+	private void onProgressRefresh(float scale, boolean fromUser) {
+		if (scale < 0) {
+			scale = 0;
+		}
+
+		if (scale > getMax()) {
+			scale = getMax();
+		}
+
 		Drawable thumb = mThumb;
 		if (thumb != null) {
-			setThumbPos(getHeight(), thumb, scale, Integer.MIN_VALUE);
+			setThumbPos(getHeight(), thumb, scale);
 			invalidate();
 		}
 		if (mOnSeekBarChangeListener != null) {
@@ -56,26 +71,30 @@ public class VerticalSeekBar2 extends SeekBar {
 		}
 	}
 
-	private void setThumbPos(int w, Drawable thumb, float scale, int gap) {
-		int available = w - getPaddingLeft() - getPaddingRight();
+	/**
+	 * 直接套用AbsSeekBar;唯一不同的是这里的
+	 * thumb的边界计算依旧是按原视图（左右）方向计算的，而不是以变换后的图形计算
+	 *
+	 * @param height
+	 * @param thumb
+	 * @param scale  {@link android.widget.AbsSeekBar)}
+	 */
+	private void setThumbPos(int height, Drawable thumb, float scale) {
+		int available = height - getPaddingBottom() - getPaddingTop();
 
 		int thumbWidth = thumb.getIntrinsicWidth();
 		int thumbHeight = thumb.getIntrinsicHeight();
 
-		int thumbPos = (int) (scale * available + 0.5f);
+		available -= thumbHeight;
 
-		// int topBound = getWidth() / 2 - thumbHeight / 2 - getPaddingTop();
-		// int bottomBound = getWidth() / 2 + thumbHeight / 2 - getPaddingTop();
+		int thumbPos = (int) (scale * available / 100 + 0.5f);
+
 		int topBound, bottomBound;
-		if (gap == Integer.MIN_VALUE) {
-			Rect oldBounds = thumb.getBounds();
-			topBound = oldBounds.top;
-			bottomBound = oldBounds.bottom;
-		} else {
-			topBound = gap;
-			bottomBound = gap + thumbHeight;
-		}
-		thumb.setBounds(thumbPos, topBound, thumbPos + thumbWidth, bottomBound);
+
+		Rect oldBounds = thumb.getBounds();
+		topBound = oldBounds.top;
+		bottomBound = oldBounds.bottom;
+		thumb.setBounds(thumbPos, topBound, thumbPos + thumbHeight, bottomBound);
 	}
 
 	public void setThumb(Drawable thumb) {
@@ -108,24 +127,23 @@ public class VerticalSeekBar2 extends SeekBar {
 		}
 
 		switch (event.getAction()) {
-		case MotionEvent.ACTION_DOWN:
-			setPressed(true);
-			onStartTrackingTouch();
-			break;
-
-		case MotionEvent.ACTION_MOVE:
-			attemptClaimDrag();
-			setProgress(getMax() - (int) (getMax() * event.getY() / getHeight()));
-			break;
-		case MotionEvent.ACTION_UP:
-			onStopTrackingTouch();
-			setPressed(false);
-			break;
-
-		case MotionEvent.ACTION_CANCEL:
-			onStopTrackingTouch();
-			setPressed(false);
-			break;
+			case MotionEvent.ACTION_DOWN:
+				setPressed(true);
+				onStartTrackingTouch();
+				break;
+			case MotionEvent.ACTION_MOVE:
+				int progress = getMax() - (int) (getMax() * event.getY() / getHeight());
+				onProgressRefresh(progress, false);
+				attemptClaimDrag();
+				break;
+			case MotionEvent.ACTION_UP:
+				onStopTrackingTouch();
+				setPressed(false);
+				break;
+			case MotionEvent.ACTION_CANCEL:
+				onStopTrackingTouch();
+				setPressed(false);
+				break;
 		}
 		return true;
 	}
