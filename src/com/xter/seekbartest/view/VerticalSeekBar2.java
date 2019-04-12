@@ -133,6 +133,7 @@ public class VerticalSeekBar2 extends SeekBar {
 				break;
 			case MotionEvent.ACTION_MOVE:
 				int progress = getMax() - (int) (getMax() * event.getY() / getHeight());
+				setProgress(progress);
 				onProgressRefresh(progress, false);
 				attemptClaimDrag();
 				break;
